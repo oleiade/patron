@@ -3,7 +3,10 @@
 const electron = require('electron');
 const {ipcMain} = require('electron');
 const os = require('os');
+const fs = require('fs');
 const path = require('path');
+const recursive = require('recursive-readdir');
+const _ = require('lodash');
 require('shelljs/global');
 require('electron-debug')({showDevTools: true});
 
@@ -83,14 +86,54 @@ function runLive(target) {
   }
 }
 
-ipcMain.on('asynchronous-message', (event, arg) => {
-  if (arg.action === 'ping') {
-    event.sender.send('asynchronous-reply', {action: 'pong'})
-  } else if (arg.action === 'open') {
-      // FIXME: need to check the existence of the file!
-      runLive(path.normalize(arg.args[0]))
-      event.sender.send('asynchronous-reply', {status: 'OK'})
+function templatesDir() {
+  var platform = os.platform()
+  var arch = os.arch()
+
+  if (platform == 'win32') {
+    return 'C:\\Users\\oleia\\Documents\\Ableton\\User\ Templates';
+  } else if (platform == 'darwin') {
+    return '~/Music/Ableton Templates';
   }
+}
+
+ipcMain.on('list-request', (event, arg) => {
+  var reply = {}
+  var templates = []
+  var templates_dir = templatesDir()
+
+  fs.access(templates_dir, fs.F_OK, function(err) {
+    if (err) {
+      reply = {
+        status: 'KO',
+        err: 'notfound',
+        err_msg: `templates folder ${templates_dir} does not exist.`
+      }
+    } else {
+      var ignore = function(file, stats) {
+        return stats.isDirectory() && path.extname(file) != ".als";
+      }
+
+      // Ignore files named 'foo.cs' and descendants of directories named test
+      recursive(templates_dir, [ignoreFunc], function (err, files) {
+        _.map(files, function(value, index, collection) {
+          return {name: path.basename(value), path: path.join(templates_dir, value)}
+        });
+        reply = {
+          status: 'OK',
+          data: files
+        }
+      });
+    }
+  })
+
+  event.sender.send('list-request', reply)
+})
+
+ipcMain.on('open-request', (event, arg) => {
+  // FIXME: need to check the existence of the file!
+  runLive(path.normalize(arg.args[0]))
+  event.sender.send('open-reply', {status: 'OK'});
 })
 
 ipcMain.on('synchronous-message', (event, arg) => {

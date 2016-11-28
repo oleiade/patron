@@ -35,7 +35,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { clicks = 0, templates = [ { name = "Mix", path = "/Users/tcr/Desktop/test\\ Project/test.als" }, { name = "Mastering", path = "/tmp/mastering" } ] }, Cmd.none )
+    ( { clicks = 0, templates = [ { name = "Mix", path = "C:\\Users\\oleia\\Desktop\\test Project\\test.als" }, { name = "Mastering", path = "/tmp/mastering" } ] }, Cmd.none )
 
 
 row : List (Html msg) -> Html msg
@@ -100,11 +100,11 @@ update msg model =
             ( model, Cmd.none )
 
         Open filename ->
-            ( model, send "asynchronous-message" <| encodeRequest { action = "open", args = [ filename ] } )
+            ( model, send "open-request" <| encodeRequest { action = "open", args = [ filename ] } )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ on "asynchronous-reply" (Json.Decode.map OnIpc decodeReply)
+        [ on "open-reply" (Json.Decode.map OnIpc decodeReply)
         ]
