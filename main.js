@@ -2,6 +2,8 @@
 
 const electron = require('electron');
 const {ipcMain} = require('electron');
+const os = require('os');
+const path = require('path');
 require('shelljs/global');
 require('electron-debug')({showDevTools: true});
 
@@ -52,22 +54,45 @@ app.on('activate', function () {
   }
 });
 
+function findLive(platform, arch) {
+  var platform = platform || os.platform();
+  var arch = arch || os.arch();
+
+  if (platform == 'win32') {
+    if (arch == 'x64')
+      return 'C:\\Program\ Files\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
+    else if (arch == 'x86')
+      return 'C:\\Program\ Files\ (x86)\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
+  else if (platform == 'darwin')
+    return '/Applications/Ableton\\ Live\\ 9\\ Suite.app';
+  }
+}
+
+function runLive(target) {
+  var platform = os.platform()
+  var arch = os.arch()
+
+  var live_path = path.normalize(findLive(platform, arch))
+
+  // FIXME: the case when running not handled platform has to be handled
+  if (platform == 'win32') {
+    console.log(`Running \"${live_path}\" \"${target}\"`)
+    return exec(`\"${live_path}\" \"${target}\"`, {async: true})
+  } else if (platform == 'darwin', {async: true}) {
+    return exec(`open -a ${live_path} ${target}`)
+  }
+}
 
 ipcMain.on('asynchronous-message', (event, arg) => {
-  console.log(arg)  // prints "ping"
   if (arg.action === 'ping') {
     event.sender.send('asynchronous-reply', {action: 'pong'})
   } else if (arg.action === 'open') {
-      var target = arg.args[0]
-      var child = exec(`open -a /Applications/Ableton\\ Live\\ 9\\ Suite.app ${target}`, function(code, stdout, stderr) {
-        console.log('Exit Code: ', code)
-      });
-      console.log("will open " + arg.args)
+      // FIXME: need to check the existence of the file!
+      runLive(path.normalize(arg.args[0]))
       event.sender.send('asynchronous-reply', {status: 'OK'})
   }
 })
 
 ipcMain.on('synchronous-message', (event, arg) => {
-  console.log(arg)  // prints "ping"
   event.returnValue = {action: 'pong'}
 })
