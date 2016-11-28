@@ -1,0 +1,6 @@
+# Dependencies
+elm-stuff/
+node_modules/
+
+# Generated js from elm
+elm.js
