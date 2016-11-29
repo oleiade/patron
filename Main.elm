@@ -5,11 +5,10 @@ import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick)
 import Html.App exposing (..)
 import Electron.IpcRenderer exposing (on, send)
-import Mouse
-import Keyboard
-import Json.Decode exposing (Decoder, object1, string, (:=))
-import Json.Encode
 import String
+import Protocol exposing (..)
+import Model exposing (..)
+import Json.Decode
 
 
 main =
@@ -21,12 +20,6 @@ main =
         }
 
 
-type alias Template =
-    { name : String
-    , path : String
-    }
-
-
 type alias Model =
     { clicks : Int
     , templates : List Template
@@ -35,7 +28,12 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { clicks = 0, templates = [ { name = "Mix", path = "C:\\Users\\oleia\\Desktop\\test Project\\test.als" }, { name = "Mastering", path = "/tmp/mastering" } ] }, Cmd.none )
+    let
+        model =
+            { clicks = 0, templates = [] }
+    in
+        model
+            ! [ send "list-request" <| encodeRequest { action = "list", args = [] } ]
 
 
 row : List (Html msg) -> Html msg
@@ -64,40 +62,20 @@ view model =
         ]
 
 
-type alias Request =
-    { action : String
-    , args : List String
-    }
-
-
-type alias Reply =
-    { action : String }
-
-
 type Msg
-    = OnIpc Reply
+    = OnReply Reply
+    | OnListReply ListReply
     | Open String
-
-
-encodeRequest : Request -> Json.Encode.Value
-encodeRequest request =
-    Json.Encode.object
-        [ ( "action", Json.Encode.string request.action )
-        , ( "args", Json.Encode.list <| List.map (\t -> Json.Encode.string t) request.args )
-        ]
-
-
-decodeReply : Decoder Reply
-decodeReply =
-    object1 Reply
-        ("action" := string)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OnIpc r ->
+        OnReply r ->
             ( model, Cmd.none )
+
+        OnListReply lr ->
+            ( { model | templates = lr.data }, Cmd.none )
 
         Open filename ->
             ( model, send "open-request" <| encodeRequest { action = "open", args = [ filename ] } )
@@ -106,5 +84,6 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ on "open-reply" (Json.Decode.map OnIpc decodeReply)
+        [ on "open-reply" (Json.Decode.map OnReply decodeReply)
+        , on "list-reply" (Json.Decode.map OnListReply decodeListReply)
         ]

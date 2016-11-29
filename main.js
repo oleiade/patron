@@ -5,10 +5,11 @@ const {ipcMain} = require('electron');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-const recursive = require('recursive-readdir');
+const processl = require('process');
+const file = require('file');
 const _ = require('lodash');
 require('shelljs/global');
-require('electron-debug')({showDevTools: true});
+// require('electron-debug')({showDevTools: true});
 
 // Module to control application life.
 const app = electron.app;
@@ -57,6 +58,10 @@ app.on('activate', function () {
   }
 });
 
+function getUserHome() {
+  return processl.env[(processl.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+}
+
 function findLive(platform, arch) {
   var platform = platform || os.platform();
   var arch = arch || os.arch();
@@ -93,49 +98,48 @@ function templatesDir() {
   if (platform == 'win32') {
     return 'C:\\Users\\oleia\\Documents\\Ableton\\User\ Templates';
   } else if (platform == 'darwin') {
-    return '~/Music/Ableton Templates';
+    var user_home = getUserHome();
+    return `${user_home}/Music/Ableton/Templates`;
   }
 }
 
 ipcMain.on('list-request', (event, arg) => {
-  var reply = {}
+  console.log('[async] list-request received');
   var templates = []
   var templates_dir = templatesDir()
 
-  fs.access(templates_dir, fs.F_OK, function(err) {
-    if (err) {
-      reply = {
-        status: 'KO',
-        err: 'notfound',
-        err_msg: `templates folder ${templates_dir} does not exist.`
-      }
-    } else {
-      var ignore = function(file, stats) {
-        return stats.isDirectory() && path.extname(file) != ".als";
-      }
+  try {
+    fs.accessSync(templates_dir);
+  } catch (err) {
+    // FIXME: should probably create it if does not exist
+    event.sender.send('list-reply', {
+      status: 'KO',
+      err: 'notfound',
+      err_msg: `templates folder ${templates_dir} does not exist`
+    })
+  }
 
-      // Ignore files named 'foo.cs' and descendants of directories named test
-      recursive(templates_dir, [ignoreFunc], function (err, files) {
-        _.map(files, function(value, index, collection) {
-          return {name: path.basename(value), path: path.join(templates_dir, value)}
-        });
-        reply = {
-          status: 'OK',
-          data: files
-        }
-      });
-    }
+  file.walkSync(templates_dir, function(dirPath, dirs, files) {
+      var live_sets = _.dropWhile(files, function(f) { return path.extname(f) != '.als'});
+      _.forEach(live_sets, function(ls) {
+        templates.push({
+          name: path.basename(ls, '.als'),
+          path: path.join(dirPath, ls)
+        })
+      })
+  });
+
+  event.sender.send('list-reply', {
+    status: 'OK',
+    data: templates
   })
-
-  event.sender.send('list-request', reply)
 })
 
 ipcMain.on('open-request', (event, arg) => {
+  console.log('[async] open-request sent')
   // FIXME: need to check the existence of the file!
   runLive(path.normalize(arg.args[0]))
-  event.sender.send('open-reply', {status: 'OK'});
-})
 
-ipcMain.on('synchronous-message', (event, arg) => {
-  event.returnValue = {action: 'pong'}
+  event.sender.send('open-reply', {status: 'OK'});
+  console.log('[async] open-reply sent')
 })

@@ -17,8 +17,5 @@
 
   <script>
     Elm.Main.fullscreen();
-    // In renderer process (web page).
-    const {ipcRenderer} = require('electron')
-    console.log(ipcRenderer.sendSync('synchronous-message', 'ping')) // prints "pong"
   </script>
 </html>
