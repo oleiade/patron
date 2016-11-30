@@ -1,19 +1,22 @@
 'use strict';
 
+// Electron libraries
 const electron = require('electron');
 const {ipcMain,dialog} = require('electron');
+require('electron-debug')({showDevTools: true});
 
+// Node native libraries
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const processl = require('process');
 const file = require('file');
 
+// Third party libraries
 const _ = require('lodash');
 const walkSync = require('walk-sync');
+const shell = require('shelljs');
 
-require('shelljs/global');
-require('electron-debug')({showDevTools: true});
 
 // Module to control application life.
 const app = electron.app;
@@ -90,7 +93,7 @@ function runLive(target) {
   if (platform == 'win32') {
     return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true})
   } else if (platform == 'darwin', {async: true}) {
-    return exec(`open -a ${live_path} ${target}`)
+    return shell.exec(`open -a ${live_path} ${target}`)
   }
 }
 
@@ -146,10 +149,10 @@ ipcMain.on('create-live-set-request', (event, arg) => {
 
   var destination = dialog.showSaveDialog({});
   if (typeof(destination) !== 'undefined') {
-    cp('-r', template_project_dir, destination);
+    shell.cp('-r', template_project_dir, destination);
 
     var new_live_set_name = path.basename(destination)
-    mv(path.join(destination, template_live_set_name), path.join(destination, new_live_set_name + '.als'))
+    shell.mv(path.join(destination, template_live_set_name), path.join(destination, new_live_set_name + '.als'))
   }
 
   event.sender.send('create-live-set-reply', {status: 'OK'})
@@ -167,11 +170,11 @@ ipcMain.on('create-template-request', (event, arg) => {
   // We should still keep track of it. Time to introduce a DB of some sort (file?)?
   var destination = dialog.showSaveDialog({defaultPath: templatesDir()});
   if (typeof(destination) !== 'undefined') {
-    cp('-r', template_project_dir, destination);
+    shell.cp('-r', template_project_dir, destination);
 
     var new_live_set_name = path.basename(destination);
     var new_live_set_path = path.join(destination, new_live_set_name + '.als');
-    mv(path.join(destination, template_live_set_name), new_live_set_path)
+    shell.mv(path.join(destination, template_live_set_name), new_live_set_path)
 
     // FIXME: We should eventually return the whole list of templates,
     // at the moment we only send back the created one and let the Elm
