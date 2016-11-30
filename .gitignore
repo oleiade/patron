@@ -1,3 +1,6 @@
+# Generated stylesheets
+static/css/*.css
+
 # Dependencies
 elm-stuff/
 node_modules/
