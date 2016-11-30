@@ -44,9 +44,9 @@ listTemplates templates =
             (\t ->
                 li [ class "list-group-item" ]
                     [ h4 [] [ text t.name ]
-                    , button [ onClick (Open t.path) ] [ text "Open" ]
-                    , button [ onClick (CreateLiveSetFrom t) ] [ text "Create Live Set from" ]
-                    , button [ onClick (CreateTemplateFrom t) ] [ text "Create template from" ]
+                    , button [ class "btn btn-default btn-lg btn-block", onClick (Open t.path) ] [ text "Open" ]
+                    , button [ class "btn btn-default btn-lg btn-block", onClick (CreateLiveSetFrom t) ] [ text "Use" ]
+                    , button [ class "btn btn-default btn-lg btn-block", onClick (CreateTemplateFrom t) ] [ text "Fork" ]
                     ]
             )
             templates

@@ -3,19 +3,20 @@
 // Electron libraries
 const electron = require('electron');
 const {ipcMain,dialog} = require('electron');
-require('electron-debug')({showDevTools: true});
+// require('electron-debug')({showDevTools: true});
 
 // Node native libraries
-const os = require('os');
 const fs = require('fs');
-const path = require('path');
-const processl = require('process');
 const file = require('file');
+const path = require('path');
 
 // Third party libraries
 const _ = require('lodash');
 const walkSync = require('walk-sync');
 const shell = require('shelljs');
+
+const live = require('./app/live.js');
+const patron = require('./app/patron.js');
 
 
 // Module to control application life.
@@ -26,6 +27,7 @@ const BrowserWindow = electron.BrowserWindow;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+
 
 function createWindow () {
   // Create the browser window.
@@ -65,54 +67,11 @@ app.on('activate', function () {
   }
 });
 
-function getUserHome() {
-  return processl.env[(processl.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-}
-
-function findLive(platform, arch) {
-  var platform = platform || os.platform();
-  var arch = arch || os.arch();
-
-  if (platform == 'win32') {
-    if (arch == 'x64')
-      return 'C:\\Program\ Files\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
-    else if (arch == 'x86')
-      return 'C:\\Program\ Files\ (x86)\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
-  }
-  else if (platform == 'darwin')
-    return '/Applications/Ableton Live 9 Suite.app';
-}
-
-function runLive(target) {
-  var platform = os.platform()
-  var arch = os.arch()
-
-  var live_path = path.normalize(findLive(platform, arch))
-
-  // FIXME: the case when running not handled platform has to be handled
-  if (platform == 'win32') {
-    return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true})
-  } else if (platform == 'darwin', {async: true}) {
-    return shell.exec(`open -a \"${live_path}\" \"${target}\"`)
-  }
-}
-
-function templatesDir() {
-  var platform = os.platform()
-  var arch = os.arch()
-
-  if (platform == 'win32') {
-    return 'C:\\Users\\oleia\\Documents\\Ableton\\User\ Templates';
-  } else if (platform == 'darwin') {
-    var user_home = getUserHome();
-    return `${user_home}/Music/Ableton/Templates`;
-  }
-}
 
 ipcMain.on('list-request', (event, arg) => {
   console.log('[async] list-request received');
   var templates = []
-  var templates_dir = templatesDir()
+  var templates_dir = patron.templatesDir()
 
   try {
     fs.accessSync(templates_dir);
@@ -168,7 +127,7 @@ ipcMain.on('create-template-request', (event, arg) => {
 
   // FIXME: What if the user places the template somewhere else on the FS?
   // We should still keep track of it. Time to introduce a DB of some sort (file?)?
-  var destination = dialog.showSaveDialog({defaultPath: templatesDir()});
+  var destination = dialog.showSaveDialog({defaultPath: patron.templatesDir()});
   if (typeof(destination) !== 'undefined') {
     shell.cp('-r', template_project_dir, destination);
 
@@ -194,7 +153,7 @@ ipcMain.on('open-request', (event, arg) => {
   console.log('[async] open-request sent')
 
   // FIXME: need to check the existence of the file!
-  runLive(path.normalize(arg.args[0]))
+  live.run(path.normalize(arg.args[0]))
 
   event.sender.send('open-reply', {status: 'OK'});
   console.log('[async] open-reply sent')
