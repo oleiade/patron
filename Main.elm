@@ -49,6 +49,8 @@ listTemplates templates =
                 li [ class "list-group-item" ]
                     [ h3 [] [ text t.name ]
                     , button [ onClick (Open t.path) ] [ text "Open" ]
+                    , button [ onClick (CreateLiveSetFrom t) ] [ text "Create Live Set from" ]
+                    , button [ onClick (CreateTemplateFrom t) ] [ text "Create template from" ]
                     ]
             )
             templates
@@ -65,7 +67,10 @@ view model =
 type Msg
     = OnReply Reply
     | OnListReply ListReply
+    | OnCreateTemplateReply ListReply
     | Open String
+    | CreateLiveSetFrom Template
+    | CreateTemplateFrom Template
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -77,8 +82,17 @@ update msg model =
         OnListReply lr ->
             ( { model | templates = lr.data }, Cmd.none )
 
+        OnCreateTemplateReply lr ->
+            ( { model | templates = List.append model.templates lr.data }, Cmd.none )
+
         Open filename ->
             ( model, send "open-request" <| encodeRequest { action = "open", args = [ filename ] } )
+
+        CreateLiveSetFrom t ->
+            ( model, send "create-live-set-request" <| encodeRequest { action = "create-live-set", args = [ t.path ] } )
+
+        CreateTemplateFrom t ->
+            ( model, send "create-template-request" <| encodeRequest { action = "create-template", args = [ t.name, t.path ] } )
 
 
 subscriptions : Model -> Sub Msg
@@ -86,4 +100,5 @@ subscriptions model =
     Sub.batch
         [ on "open-reply" (Json.Decode.map OnReply decodeReply)
         , on "list-reply" (Json.Decode.map OnListReply decodeListReply)
+        , on "create-template-reply" (Json.Decode.map OnCreateTemplateReply decodeListReply)
         ]

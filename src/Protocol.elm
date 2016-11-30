@@ -51,16 +51,6 @@ type alias ListReply =
     }
 
 
-
--- type alias ListReply =
---     { status : String
---     }
--- decodeListReply : Json.Decode.Decoder ListReply
--- decodeListReply =
---     Json.Decode.object1 ListReply
---         ("status" := Json.Decode.string)
-
-
 decodeListReply : Json.Decode.Decoder ListReply
 decodeListReply =
     Json.Decode.succeed ListReply

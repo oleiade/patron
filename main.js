@@ -1,7 +1,8 @@
 'use strict';
 
 const electron = require('electron');
-const {ipcMain} = require('electron');
+const {ipcMain,dialog} = require('electron');
+
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
@@ -133,7 +134,59 @@ ipcMain.on('list-request', (event, arg) => {
     status: 'OK',
     data: templates
   })
-})
+});
+
+ipcMain.on('create-live-set-request', (event, arg) => {
+  console.log('create-live-set-request received')
+  console.log(arg)
+
+  var template_path = arg.args[0];
+  var template_project_dir = path.dirname(template_path);
+  var template_live_set_name = path.basename(template_path);
+
+  var destination = dialog.showSaveDialog({});
+  if (typeof(destination) !== 'undefined') {
+    cp('-r', template_project_dir, destination);
+
+    var new_live_set_name = path.basename(destination)
+    mv(path.join(destination, template_live_set_name), path.join(destination, new_live_set_name + '.als'))
+  }
+
+  event.sender.send('create-live-set-reply', {status: 'OK'})
+});
+
+
+ipcMain.on('create-template-request', (event, arg) => {
+  console.log('create-template-request received')
+  console.log(arg)
+
+  var template_path = arg.args[0];
+  var template_project_dir = path.dirname(template_path);
+  var template_live_set_name = path.basename(template_path);
+
+  // FIXME: What if the user places the template somewhere else on the FS?
+  // We should still keep track of it. Time to introduce a DB of some sort (file?)?
+  var destination = dialog.showSaveDialog({defaultPath: templatesDir()});
+  if (typeof(destination) !== 'undefined') {
+    cp('-r', template_project_dir, destination);
+
+    var new_live_set_name = path.basename(destination);
+    var new_live_set_path = path.join(destination, new_live_set_name + '.als');
+    mv(path.join(destination, template_live_set_name), new_live_set_path)
+
+    // FIXME: We should eventually return the whole list of templates,
+    // at the moment we only send back the created one and let the Elm
+    // frontend append to its model by itself.
+    event.sender.send('create-template-reply', {
+      status: 'OK',
+      data: [
+        { name: new_live_set_name,
+          path: new_live_set_path
+        }
+      ]
+    });
+  }
+});
 
 ipcMain.on('open-request', (event, arg) => {
   console.log('[async] open-request sent')
