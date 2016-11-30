@@ -8,7 +8,10 @@ const fs = require('fs');
 const path = require('path');
 const processl = require('process');
 const file = require('file');
+
 const _ = require('lodash');
+const walkSync = require('walk-sync');
+
 require('shelljs/global');
 require('electron-debug')({showDevTools: true});
 
@@ -85,8 +88,7 @@ function runLive(target) {
 
   // FIXME: the case when running not handled platform has to be handled
   if (platform == 'win32') {
-    console.log(`Running \"${live_path}\" \"${target}\"`)
-    return exec(`\"${live_path}\" \"${target}\"`, {async: true})
+    return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true})
   } else if (platform == 'darwin', {async: true}) {
     return exec(`open -a ${live_path} ${target}`)
   }
@@ -120,15 +122,14 @@ ipcMain.on('list-request', (event, arg) => {
     })
   }
 
-  file.walkSync(templates_dir, function(dirPath, dirs, files) {
-      var live_sets = _.dropWhile(files, function(f) { return path.extname(f) != '.als'});
-      _.forEach(live_sets, function(ls) {
-        templates.push({
-          name: path.basename(ls, '.als'),
-          path: path.join(dirPath, ls)
-        })
-      })
+  var live_sets = walkSync(templates_dir, {globs: ["**/*.als"], directories: false});
+  _.forEach(live_sets, function(ls) {
+    templates.push({
+      name: path.basename(ls, '.als'),
+      path: path.join(templates_dir, ls)
+    })
   });
+
 
   event.sender.send('list-reply', {
     status: 'OK',
@@ -138,7 +139,6 @@ ipcMain.on('list-request', (event, arg) => {
 
 ipcMain.on('create-live-set-request', (event, arg) => {
   console.log('create-live-set-request received')
-  console.log(arg)
 
   var template_path = arg.args[0];
   var template_project_dir = path.dirname(template_path);
@@ -158,7 +158,6 @@ ipcMain.on('create-live-set-request', (event, arg) => {
 
 ipcMain.on('create-template-request', (event, arg) => {
   console.log('create-template-request received')
-  console.log(arg)
 
   var template_path = arg.args[0];
   var template_project_dir = path.dirname(template_path);

@@ -28,7 +28,8 @@
     "electron-prebuilt": "^0.36.0",
     "file": "^0.2.2",
     "lodash": "^4.17.2",
-    "shelljs": "^0.7.5"
+    "shelljs": "^0.7.5",
+    "walk-sync": "^0.3.1"
   },
   "dependencies": {
     "electron-debug": "^1.1.0"
