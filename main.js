@@ -78,9 +78,9 @@ function findLive(platform, arch) {
       return 'C:\\Program\ Files\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
     else if (arch == 'x86')
       return 'C:\\Program\ Files\ (x86)\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
-  else if (platform == 'darwin')
-    return '/Applications/Ableton\\ Live\\ 9\\ Suite.app';
   }
+  else if (platform == 'darwin')
+    return '/Applications/Ableton Live 9 Suite.app';
 }
 
 function runLive(target) {
@@ -93,7 +93,7 @@ function runLive(target) {
   if (platform == 'win32') {
     return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true})
   } else if (platform == 'darwin', {async: true}) {
-    return shell.exec(`open -a ${live_path} ${target}`)
+    return shell.exec(`open -a \"${live_path}\" \"${target}\"`)
   }
 }
 
@@ -192,6 +192,7 @@ ipcMain.on('create-template-request', (event, arg) => {
 
 ipcMain.on('open-request', (event, arg) => {
   console.log('[async] open-request sent')
+
   // FIXME: need to check the existence of the file!
   runLive(path.normalize(arg.args[0]))
 

@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, text, button, h5, ul, li)
+import Html exposing (Html, div, text, button, h4, ul, li)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Html.App exposing (..)
@@ -43,7 +43,7 @@ listTemplates templates =
         (List.map
             (\t ->
                 li [ class "list-group-item" ]
-                    [ h5 [] [ text t.name ]
+                    [ h4 [] [ text t.name ]
                     , button [ onClick (Open t.path) ] [ text "Open" ]
                     , button [ onClick (CreateLiveSetFrom t) ] [ text "Create Live Set from" ]
                     , button [ onClick (CreateTemplateFrom t) ] [ text "Create template from" ]
