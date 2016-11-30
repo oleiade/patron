@@ -10,7 +10,7 @@ const processl = require('process');
 const file = require('file');
 const _ = require('lodash');
 require('shelljs/global');
-// require('electron-debug')({showDevTools: true});
+require('electron-debug')({showDevTools: true});
 
 // Module to control application life.
 const app = electron.app;

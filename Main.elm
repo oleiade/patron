@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (p, text, div, ul, li, h3, button, Html)
-import Html.Attributes exposing (class, value)
+import Html exposing (Html, div, text, button, h5, ul, li)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Html.App exposing (..)
 import Electron.IpcRenderer exposing (on, send)
@@ -9,6 +9,7 @@ import String
 import Protocol exposing (..)
 import Model exposing (..)
 import Json.Decode
+import Bootstrap exposing (row, navbar, navbarBrand)
 
 
 main =
@@ -36,18 +37,13 @@ init =
             ! [ send "list-request" <| encodeRequest { action = "list", args = [] } ]
 
 
-row : List (Html msg) -> Html msg
-row elements =
-    div [ class "row" ] elements
-
-
 listTemplates : List Template -> Html Msg
 listTemplates templates =
     ul [ class "list-group" ]
         (List.map
             (\t ->
                 li [ class "list-group-item" ]
-                    [ h3 [] [ text t.name ]
+                    [ h5 [] [ text t.name ]
                     , button [ onClick (Open t.path) ] [ text "Open" ]
                     , button [ onClick (CreateLiveSetFrom t) ] [ text "Create Live Set from" ]
                     , button [ onClick (CreateTemplateFrom t) ] [ text "Create template from" ]
@@ -60,7 +56,10 @@ listTemplates templates =
 view : Model -> Html Msg
 view model =
     div [ class "container" ]
-        [ row [ listTemplates model.templates ]
+        [ navbar []
+            [ navbarBrand [] [ text "patron" ]
+            ]
+        , row [ listTemplates model.templates ]
         ]
 
 
