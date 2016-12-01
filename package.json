@@ -26,6 +26,8 @@
   "devDependencies": {
     "devtron": "^1.4.0",
     "electron-prebuilt": "^0.36.0",
+    "eslint": "^3.11.1",
+    "eslint-config-google": "^0.7.1",
     "file": "^0.2.2",
     "lodash": "^4.17.2",
     "shelljs": "^0.7.5",
