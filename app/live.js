@@ -28,7 +28,7 @@ exports.run = function(target) {
   // FIXME: the case when running not handled platform has to be handled
   if (platform == 'win32') {
     return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true})
-  } else if (platform == 'darwin', {async: true}) {
-    return shell.exec(`open -a \"${live_path}\" \"${target}\"`)
+  } else if (platform == 'darwin') {
+    return shell.exec(`open -a \"${live_path}\" \"${target}\"`, {async: true})
   }
 }
