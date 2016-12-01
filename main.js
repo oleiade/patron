@@ -71,7 +71,7 @@ app.on('activate', function () {
 ipcMain.on('list-request', (event, arg) => {
   console.log('[async] list-request received');
   var templates = []
-  var templates_dir = patron.templatesDir()
+  var templates_dir = patron.defaultTemplatesDir()
 
   try {
     fs.accessSync(templates_dir);
@@ -127,7 +127,7 @@ ipcMain.on('create-template-request', (event, arg) => {
 
   // FIXME: What if the user places the template somewhere else on the FS?
   // We should still keep track of it. Time to introduce a DB of some sort (file?)?
-  var destination = dialog.showSaveDialog({defaultPath: patron.templatesDir()});
+  var destination = dialog.showSaveDialog({defaultPath: patron.defaultTemplatesDir()});
   if (typeof(destination) !== 'undefined') {
     shell.cp('-r', template_project_dir, destination);
 

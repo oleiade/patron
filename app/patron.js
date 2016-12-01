@@ -2,7 +2,7 @@ const os = require('os');
 
 const helpers = require('./helpers.js');
 
-exports.templatesDir = function() {
+exports.defaultTemplatesDir = function() {
   var platform = os.platform()
   var arch = os.arch()
 
