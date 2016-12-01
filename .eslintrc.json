@@ -1,0 +1,16 @@
+{
+    "extends": "google",
+    "installedESLint": true,
+
+    "linebreak-style": ["error", "unix"],
+    "max-len": [2, 80, 4, {"ignoreStrings": true}],
+
+    "env": {
+        "browser": true,
+        "node": true
+    },
+
+    "parserOptions": {
+      "ecmaVersion": 6
+    }
+}

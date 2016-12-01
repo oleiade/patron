@@ -7,79 +7,73 @@ const shell = require('shelljs');
 const patron = require('./patron.js');
 const helpers = require('./helpers.js');
 
-exports.find = function(platform, arch) {
-  var platform = platform || os.platform();
-  var arch = arch || os.arch();
-  var live_path = "";
+exports.find = function(_platform, _arch) {
+  const platform = _platform || os.platform();
+  const arch = _arch || os.arch();
 
   if (platform == 'win32') {
-    if (arch == 'x64')
-      live_path = 'C:\\Program\ Files\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
-    else if (arch == 'x86')
-      live_path = 'C:\\Program\ Files\ (x86)\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe';
+    if (arch == 'x64') {
+      return path.normalize('C:\\Program\ Files\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe');
+    } else if (arch == 'x86') {
+      return path.normalize('C:\\Program\ Files\ (x86)\\Ableton\\Ableton\ Live\ 9\ Suite\\Program\\Ableton\ Live\ 9\ Suite.exe');
+    }
+  } else if (platform == 'darwin') {
+    return path.normalize('/Applications/Ableton Live 9 Suite.app');
   }
-  else if (platform == 'darwin')
-    live_path = '/Applications/Ableton Live 9 Suite.app';
-
-  return path.normalize(live_path);
-}
+};
 
 
-exports.run = function(target, platform, arch) {
-  var platform = platform || os.platform();
-  var arch = arch || os.arch();
-  var target = target || "";
-
-  var live_path = this.find(platform, arch);
+exports.run = function(_target, _platform, _arch) {
+  const platform = _platform || os.platform();
+  const arch = _arch || os.arch();
+  const target = _target || '';
+  const livePath = this.find(platform, arch);
 
   // FIXME: the case when running not handled platform has to be handled
   if (platform == 'win32') {
-    return shell.exec(`\"${live_path}\" \"${target}\"`, {async: true});
+    return shell.exec(`\"${livePath}\" \"${target}\"`, {async: true});
   } else if (platform == 'darwin') {
-    return shell.exec(`open -a \"${live_path}\" \"${target}\"`, {async: true});
+    return shell.exec(`open -a \"${livePath}\" \"${target}\"`, {async: true});
   }
-}
+};
 
 exports.openSet = function(liveSet) {
-  var platform = os.platform();
-  var arch = os.arch();
+  const platform = os.platform();
+  const arch = os.arch();
 
   return this.run(liveSet, platform, arch);
-}
+};
 
 exports.useTemplate = function(template) {
-  var template_project_dir = path.dirname(template);
-  var template_live_set_name = path.basename(template);
+  const templateProjectDir = path.dirname(template);
+  const templateLiveSetName = path.basename(template);
 
-  var destination = dialog.showSaveDialog({defaultPath: helpers.getUserHome()});
+  const destination = dialog.showSaveDialog({defaultPath: helpers.getUserHome()});
   if (typeof(destination) !== 'undefined') {
-    shell.cp('-r', template_project_dir, destination);
+    shell.cp('-r', templateProjectDir, destination);
 
-    var new_live_set_name = path.basename(destination);
-    var new_live_set_path = path.join(destination, new_live_set_name + '.als');
-    shell.mv(path.join(destination, template_live_set_name), new_live_set_path);
+    const newLiveSetName = path.basename(destination);
+    const newLiveSetPath = path.join(destination, newLiveSetName + '.als');
+    shell.mv(path.join(destination, templateLiveSetName), newLiveSetPath);
+
+    return [newLiveSetName, newLiveSetPath];
   }
-
-  return [new_live_set_name, new_live_set_path];
-}
+};
 
 exports.forkTemplate = function(srcTemplate) {
-  var template_project_dir = path.dirname(srcTemplate);
-  var template_live_set_name = path.basename(srcTemplate);
-
-  var new_list_set_name = "";
-  var new_list_set_path = "";
+  let templateProjectDir = path.dirname(srcTemplate);
+  let templateLiveSetName = path.basename(srcTemplate);
 
   // FIXME: What if the user places the template somewhere else on the FS?
   // We should still keep track of it. Time to introduce a DB of some sort (file?)?
-  var destination = dialog.showSaveDialog({defaultPath: patron.defaultTemplatesDir()});
+  const destination = dialog.showSaveDialog({defaultPath: patron.defaultTemplatesDir()});
   if (typeof(destination) !== 'undefined') {
-    shell.cp('-r', template_project_dir, destination);
+    shell.cp('-r', templateProjectDir, destination);
 
-    var new_live_set_name = path.basename(destination);
-    var new_live_set_path = path.join(destination, new_live_set_name + '.als');
-    shell.mv(path.join(destination, template_live_set_name), new_live_set_path);
+    const newLiveSetName = path.basename(destination);
+    const newLiveSetPath = path.join(destination, newLiveSetName + '.als');
+    shell.mv(path.join(destination, templateLiveSetName), newLiveSetPath);
+
+    return [newLiveSetName, newLiveSetPath];
   }
-
-  return [new_live_set_name, new_live_set_path];
-}
+};

@@ -3,14 +3,13 @@ const os = require('os');
 const helpers = require('./helpers.js');
 
 exports.defaultTemplatesDir = function() {
-  var platform = os.platform()
-  var arch = os.arch()
-  var user_home = helpers.getUserHome();
+  const platform = os.platform();
+  const userHome = helpers.getUserHome();
 
   if (platform == 'win32') {
-    return `${user_home}\\Documents\\Ableton\\User\ Templates`;
+    return `${userHome}\\Documents\\Ableton\\User\ Templates`;
   } else if (platform == 'darwin') {
-    var user_home = helpers.getUserHome();
-    return `${user_home}/Music/Ableton/Templates`;
+    const userHome = helpers.getUserHome();
+    return `${userHome}/Music/Ableton/Templates`;
   }
-}
+};
