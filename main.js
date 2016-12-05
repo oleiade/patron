@@ -16,6 +16,7 @@ const low = require('lowdb');
 
 const live = require('./app/live.js');
 const patron = require('./app/patron.js');
+const templates = require('./app/templates.js');
 
 
 // Module to control application life.
@@ -58,7 +59,7 @@ function initializeSettings() {
   settings.defaults({
     templatesDir: patron.defaultTemplatesDir(),
     userDirs: [],
-  });
+  }).value();
 }
 
 /**
@@ -95,32 +96,10 @@ app.on('activate', function() {
 
 ipcMain.on('list-request', (event, arg) => {
   console.log('[async] list-request received');
-  let templates = [];
-  let templatesDir = patron.defaultTemplatesDir();
-
-  try {
-    fs.accessSync(templatesDir);
-  } catch (err) {
-    // FIXME: should probably create it if does not exist
-    event.sender.send('list-reply', {
-      status: 'KO',
-      err: 'notfound',
-      err_msg: `templates folder ${templatesDir} does not exist`,
-    });
-  }
-
-  let liveSets = walkSync(templatesDir, {globs: ['**/*.als'], directories: false});
-  _.forEach(liveSets, function(ls) {
-    templates.push({
-      name: path.basename(ls, '.als'),
-      path: path.join(templatesDir, ls),
-    });
-  });
-
 
   event.sender.send('list-reply', {
     status: 'OK',
-    data: templates,
+    data: templates.list(settings.get('templatesDir').value()),
   });
 });
 
