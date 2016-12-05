@@ -30,6 +30,7 @@
     "eslint-config-google": "^0.7.1",
     "file": "^0.2.2",
     "lodash": "^4.17.2",
+    "lowdb": "^0.14.0",
     "shelljs": "^0.7.5",
     "walk-sync": "^0.3.1"
   },
