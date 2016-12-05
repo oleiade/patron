@@ -12,6 +12,7 @@ const path = require('path');
 // Third party libraries
 const _ = require('lodash');
 const walkSync = require('walk-sync');
+const low = require('lowdb');
 
 const live = require('./app/live.js');
 const patron = require('./app/patron.js');
@@ -21,6 +22,8 @@ const patron = require('./app/patron.js');
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
+
+const db = low(path.join(app.getAppPath(), 'db.json'));
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -47,9 +50,17 @@ function createWindow() {
   });
 }
 
+/**
+ *
+ */
+function initialize() {
+  db.defaults({user_sets: []});
+  createWindow();
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.on('ready', createWindow);
+app.on('ready', initialize);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
