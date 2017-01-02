@@ -1,0 +1,3 @@
+[submodule "modules/electron"]
+	path = modules/electron
+	url = https://github.com/elm-electron/electron
