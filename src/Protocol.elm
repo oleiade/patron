@@ -2,8 +2,7 @@ module Protocol exposing (..)
 
 import Json.Encode
 import Json.Decode
-import Json.Decode exposing ((:=))
-import Json.Decode.Extra as Extra exposing (withDefault, (|:))
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Model exposing (Template, decodeTemplate)
 
 
@@ -38,8 +37,8 @@ emptyReply =
 
 decodeReply : Json.Decode.Decoder Reply
 decodeReply =
-    Json.Decode.object1 Reply
-        ("status" := Json.Decode.string)
+    decode Reply
+        |> required "status" Json.Decode.string
 
 
 type alias ListReply =
@@ -53,9 +52,9 @@ type alias ListReply =
 
 decodeListReply : Json.Decode.Decoder ListReply
 decodeListReply =
-    Json.Decode.succeed ListReply
-        |: ("action" := Json.Decode.string |> withDefault "default action")
-        |: ("status" := Json.Decode.string |> withDefault "default status")
-        |: ("data" := Json.Decode.list decodeTemplate)
-        |: ("err" := Json.Decode.string |> withDefault "")
-        |: ("err_msg" := Json.Decode.string |> withDefault "")
+    decode ListReply
+        |> optional "action" Json.Decode.string "default action"
+        |> optional "status" Json.Decode.string "default status"
+        |> required "data" (Json.Decode.list decodeTemplate)
+        |> optional "err" Json.Decode.string ""
+        |> optional "err_msg" Json.Decode.string ""

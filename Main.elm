@@ -1,9 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, div, text, button, h4, ul, li)
+import Html exposing (Html, program, div, text, button, h4, ul, li)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Html.App exposing (..)
 import Electron.IpcRenderer exposing (on, send)
 import String
 import Protocol exposing (..)
@@ -13,7 +12,7 @@ import Bootstrap exposing (row, navbar, navbarBrand)
 
 
 main =
-    Html.App.program
+    program
         { init = init
         , view = view
         , update = update

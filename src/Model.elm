@@ -2,8 +2,7 @@ module Model exposing (..)
 
 import Json.Encode
 import Json.Decode
-import Json.Decode exposing ((:=))
-import Json.Decode.Extra as Extra exposing (withDefault, (|:))
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
 type alias Template =
@@ -23,5 +22,5 @@ encodeTemplate template =
 decodeTemplate : Json.Decode.Decoder Template
 decodeTemplate =
     Json.Decode.succeed Template
-        |: ("name" := Json.Decode.string |> withDefault "default name")
-        |: ("path" := Json.Decode.string |> withDefault "default path")
+        |> optional "name" Json.Decode.string "default name"
+        |> optional "path" Json.Decode.string "default path"
